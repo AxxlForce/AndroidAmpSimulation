@@ -1,2 +1,5 @@
 /bin
 /gen
+/obj
+/proguard-project.txt
+/assets
