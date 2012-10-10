@@ -16,27 +16,94 @@
  * limitations under the License.
  */
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="horizontal" >
 
+    <Space
+        android:layout_column="0"
+        android:layout_row="0" />
+
+    <Space
+        android:layout_column="1"
+        android:layout_row="0" />
+
+    <Button
+        android:id="@+id/Start"
+        android:layout_width="141dp"
+        android:layout_height="83dp"
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        android:layout_gravity="left"
+        android:layout_row="1"
+        android:text="Start Engine!" />
+
     <Button
         android:id="@+id/Run"
-        android:layout_width="148dp"
-        android:layout_height="191dp"
+        android:layout_width="147dp"
+        android:layout_height="84dp"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:layout_row="3"
         android:text="Run!" />
-    
+
+    <Space
+        android:layout_width="1dp"
+        android:layout_height="21dp"
+        android:layout_column="0"
+        android:layout_row="0" />
+
+    <Space
+        android:layout_width="1dp"
+        android:layout_height="10dp"
+        android:layout_column="0"
+        android:layout_row="2" />
+
+    <Space
+        android:layout_width="1dp"
+        android:layout_height="87dp"
+        android:layout_column="0"
+        android:layout_row="1" />
+
+    <Space
+        android:layout_width="1dp"
+        android:layout_height="85dp"
+        android:layout_column="0"
+        android:layout_row="3" />
+
+    <Space
+        android:layout_width="-26dp"
+        android:layout_height="1dp"
+        android:layout_column="2"
+        android:layout_row="0" />
+
+    <Space
+        android:layout_width="66dp"
+        android:layout_height="15dp"
+        android:layout_column="1"
+        android:layout_row="0" />
+
     <Button
-        android:id="@+id/Stop"
-        android:layout_width="163dp"
-        android:layout_height="191dp"
-        android:text="Stop!" />
+        android:id="@+id/Shutdown"
+        android:layout_width="152dp"
+        android:layout_height="80dp"
+        android:layout_column="1"
+        android:layout_row="1"
+        android:text="Shutdown Engine!" />
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" >
+    <Button
+        android:id="@+id/Quit"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:layout_row="4"
+        android:text="Quit" />
 
-    </RelativeLayout>
+    <Button
+        android:id="@+id/Reverb"
+        android:layout_column="0"
+        android:layout_gravity="left"
+        android:layout_row="4"
+        android:text="Reverb" />
 
-</LinearLayout>
+</GridLayout>

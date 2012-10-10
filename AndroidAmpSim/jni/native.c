@@ -34,13 +34,9 @@
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
-// for native asset manager
-#include <sys/types.h>
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
-
 // threads
 pthread_t playerThread;
+pthread_t recorderThread;
 
 // engine interfaces
 static SLObjectItf engineObject = NULL;
@@ -65,35 +61,42 @@ static SLRecordItf recorderRecord;
 static SLAndroidSimpleBufferQueueItf bqRecorderBufferQueue;
 
 // buffer
-#define FRAMES_PER_BUFFER (1024)
-#define NUMBER_OF_BUFFERS (1)
-#define BUFFER_SIZE (1024 * sizeof(uint16_t))
-static uint16_t realtimeBuffer[FRAMES_PER_BUFFER * NUMBER_OF_BUFFERS];
-static uint16_t playFrame = 0;
+#define SAMPLES_PER_BUFFER (150)
+#define NUMBER_OF_BUFFERS (5000)
+static SLDataFormat_PCM FORMAT_PCM = { SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
 
-static unsigned recorderSize = 0;
-static SLmilliHertz recorderSR;
-
-// pointer and size of the next player buffer to enqueue, and number of remaining buffers
-static short *nextBuffer;
-static unsigned nextSize;
-static int nextCount;
+#define BUFFER_SIZE (SAMPLES_PER_BUFFER * SL_PCMSAMPLEFORMAT_FIXED_16)
+static uint16_t realtimeBuffer[SAMPLES_PER_BUFFER * NUMBER_OF_BUFFERS];
+static uint16_t recordingShift = 0;
+static uint16_t playingShift = 0;
 
 // prototypes
 void createEngine();
 void createAudioRecorder();
 void createAudioPlayer();
+void recordSingleBuffer(const void *pBuffer, SLuint32 size);
 
 /*--------------------------------------------------------------------------------------------------------------------------------------
  * functions to be called from java code
  *------------------------------------------------------------------------------------------------------------------------------------*/
 
 // create the engine and output mix objects
-void Java_com_alex_android_ampsim_Main_startAudioLoopback(JNIEnv* env, jclass clazz)
+void Java_com_alex_android_ampsim_Main_createEngine(JNIEnv* env, jclass clazz)
 {
 	createEngine();
 	createAudioRecorder();
 	createAudioPlayer();
+}
+
+void Java_com_alex_android_ampsim_Main_runEngine(JNIEnv* env, jclass clazz)
+{
+	// kickoff loopback!
+	recordSingleBuffer(&realtimeBuffer[0], BUFFER_SIZE);
+}
+
+jfloat Java_com_alex_android_ampsim_Main_getLatency(JNIEnv* env, jclass clazz)
+{
+	return SAMPLES_PER_BUFFER / 4.41;
 }
 
 // enable reverb on the buffer queue player
@@ -102,38 +105,37 @@ jboolean Java_com_alex_android_ampsim_Main_enableReverb(JNIEnv* env, jclass claz
 	SLresult result;
 
 	// we might not have been able to add environmental reverb to the output mix
-	if (NULL == outputMixEnvironmentalReverb)
+	if ((NULL == outputMixEnvironmentalReverb) || (PlayerEffectSend == NULL ))
 	{
 		return JNI_FALSE;
+		__android_log_print(ANDROID_LOG_INFO, APP, "reverb failed!");
 	}
 
 	result = (*PlayerEffectSend)->EnableEffectSend(PlayerEffectSend, outputMixEnvironmentalReverb, (SLboolean) enabled, (SLmillibel) 0);
 	// and even if environmental reverb was present, it might no longer be available
 	if (SL_RESULT_SUCCESS != result)
 	{
+		__android_log_print(ANDROID_LOG_INFO, APP, "reverb failed!");
 		return JNI_FALSE;
 	}
-
 	return JNI_TRUE;
 }
 
 // shut down the native audio system
 void Java_com_alex_android_ampsim_Main_shutdown(JNIEnv* env, jclass clazz)
 {
-
 	// destroy buffer queue audio player object, and invalidate all associated interfaces
 	if (playerObject != NULL )
 	{
 		// kill player thread
 		pthread_kill(playerThread, 0);
+		pthread_kill(recorderThread, 0);
 
 		(*playerObject)->Destroy(playerObject);
 		playerObject = NULL;
 		playerObject = NULL;
 		bqPlayerBufferQueue = NULL;
 		PlayerEffectSend = NULL;
-//		PlayerMuteSolo = NULL;
-//		PlayerVolume = NULL;
 	}
 
 	// destroy audio recorder object, and invalidate all associated interfaces
@@ -165,29 +167,41 @@ void Java_com_alex_android_ampsim_Main_shutdown(JNIEnv* env, jclass clazz)
 /*--------------------------------------------------------------------------------------------------------------------------------------
  * c functions
  *------------------------------------------------------------------------------------------------------------------------------------*/
+void recordSingleBuffer(const void *pBuffer, SLuint32 size)
+{
+	// RECORD!
+	//__android_log_print(ANDROID_LOG_INFO, APP, "recording to Buffer at address: %X", pBuffer);
+	(*bqRecorderBufferQueue)->Enqueue(bqRecorderBufferQueue, pBuffer, size);
+}
+
+void playSingleBuffer(const void *pBuffer, SLuint32 size)
+{
+	// Play!
+	//__android_log_print(ANDROID_LOG_INFO, APP, "playing Buffer at address: %X", pBuffer);
+	(*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, pBuffer, size);
+}
 
 // this callback handler is called every time a buffer finishes playing
 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void* context)
 {
-	assert(bq == bqPlayerBufferQueue);
-	assert(NULL == context);
-	SLresult result;
-
-	// PLAY!
-	__android_log_print(ANDROID_LOG_INFO, APP, "emptying Buffer No.: %u", playFrame);
-	result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &realtimeBuffer[0], BUFFER_SIZE);
+	//if (isRunning)
+	{
+		++playingShift;
+		playSingleBuffer(&realtimeBuffer[playingShift], BUFFER_SIZE);
+	}
 }
 
 // this callback handler is called every time a buffer finishes recording
 void bqRecorderCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
-	assert(bq == bqRecorderBufferQueue);
-	assert(NULL == context);
-	SLresult result;
+	//if (isRunning)
+	{
+		if (playingShift == 0)
+			playSingleBuffer(&realtimeBuffer[0], BUFFER_SIZE);
 
-	// RECORD!
-	__android_log_print(ANDROID_LOG_INFO, APP, "filling Buffer No.: %u", playFrame);
-	result = (*bqRecorderBufferQueue)->Enqueue(bqRecorderBufferQueue, &realtimeBuffer[0], BUFFER_SIZE);
+		++recordingShift;
+		recordSingleBuffer(&realtimeBuffer[recordingShift], BUFFER_SIZE);
+	}
 }
 
 void createEngine()
@@ -221,10 +235,10 @@ void createEngine()
 	// this could fail if the environmental reverb effect is not available,
 	// either because the feature is not present, excessive CPU load, or
 	// the required MODIFY_AUDIO_SETTINGS permission was not requested and granted
-	//result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB, &outputMixEnvironmentalReverb); TODO
+	result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB, &outputMixEnvironmentalReverb);
 	if (SL_RESULT_SUCCESS == result)
 	{
-		//result = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(outputMixEnvironmentalReverb, &reverbSettings); TODO
+		result = (*outputMixEnvironmentalReverb)->SetEnvironmentalReverbProperties(outputMixEnvironmentalReverb, &reverbSettings);
 		__android_log_print(ANDROID_LOG_INFO, APP, "audio engine successfully created");
 	}
 	else
@@ -233,8 +247,7 @@ void createEngine()
 	}
 }
 
-// create audio recorder
-void createAudioRecorder()
+void* RecorderThread(void* ptr)
 {
 	SLresult result;
 
@@ -244,7 +257,7 @@ void createAudioRecorder()
 
 	// configure audio sink
 	SLDataLocator_AndroidSimpleBufferQueue loc_bq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
-	SLDataFormat_PCM format_pcm = { SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_44_1, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
+	SLDataFormat_PCM format_pcm = FORMAT_PCM;
 	SLDataSink audioSnk = { &loc_bq, &format_pcm };
 
 	// create audio recorder
@@ -252,19 +265,9 @@ void createAudioRecorder()
 	const SLInterfaceID id[1] = { SL_IID_ANDROIDSIMPLEBUFFERQUEUE };
 	const SLboolean req[1] = { SL_BOOLEAN_TRUE };
 	result = (*engineEngine)->CreateAudioRecorder(engineEngine, &recorderObject, &audioSrc, &audioSnk, 1, id, req);
-	if (SL_RESULT_SUCCESS != result)
-	{
-		__android_log_print(ANDROID_LOG_INFO, APP, "creating recorder failed");
-		return;
-	}
 
 	// realize the audio recorder
 	result = (*recorderObject)->Realize(recorderObject, SL_BOOLEAN_FALSE );
-	if (SL_RESULT_SUCCESS != result)
-	{
-		__android_log_print(ANDROID_LOG_INFO, APP, "realizing recorder failed");
-		return;
-	}
 
 	// get the record interface
 	result = (*recorderObject)->GetInterface(recorderObject, SL_IID_RECORD, &recorderRecord);
@@ -278,26 +281,30 @@ void createAudioRecorder()
 	result = (*bqRecorderBufferQueue)->RegisterCallback(bqRecorderBufferQueue, bqRecorderCallback, NULL );
 	assert(SL_RESULT_SUCCESS == result);
 
-	// enqueue first empty buffer to be filled by the recorder
-	result = (*bqRecorderBufferQueue)->Enqueue(bqRecorderBufferQueue, &realtimeBuffer[0], BUFFER_SIZE);
-	assert(SL_RESULT_SUCCESS == result);
-
 	// start recording
 	result = (*recorderRecord)->SetRecordState(recorderRecord, SL_RECORDSTATE_RECORDING );
 	assert(SL_RESULT_SUCCESS == result);
 
-	__android_log_print(ANDROID_LOG_INFO, APP, "successfully created recorder! now recording...");
+	// thread stuff...
+	while (1)
+	{
+	}
+	return NULL;
+}
+
+// create audio recorder
+void createAudioRecorder()
+{
+	pthread_create(&recorderThread, NULL, RecorderThread, NULL );
 }
 
 void* PlayerThread(void* ptr)
 {
-	__android_log_print(ANDROID_LOG_INFO, APP, "entering player thread...");
-
 	SLresult result;
 
 	// configure audio source
 	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
-	SLDataFormat_PCM format_pcm = { SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_44_1, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
+	SLDataFormat_PCM format_pcm = FORMAT_PCM;
 	SLDataSource audioSrc = { &loc_bufq, &format_pcm };
 
 	// configure audio sink
@@ -315,7 +322,7 @@ void* PlayerThread(void* ptr)
 	result = (*playerObject)->Realize(playerObject, SL_BOOLEAN_FALSE );
 	assert(SL_RESULT_SUCCESS == result);
 
-	// get the record interface
+	// get the player interface
 	result = (*playerObject)->GetInterface(playerObject, SL_IID_PLAY, &playerPlay);
 	assert(SL_RESULT_SUCCESS == result);
 
@@ -327,25 +334,19 @@ void* PlayerThread(void* ptr)
 	result = (*bqPlayerBufferQueue)->RegisterCallback(bqPlayerBufferQueue, bqPlayerCallback, NULL );
 	assert(SL_RESULT_SUCCESS == result);
 
+	// get the effect send interface
+	result = (*playerObject)->GetInterface(playerObject, SL_IID_EFFECTSEND, &PlayerEffectSend);
+	assert(SL_RESULT_SUCCESS == result);
+
 	// let the player start
 	result = (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING );
 	assert(SL_RESULT_SUCCESS == result);
-
-	static int lazyInit = SL_BOOLEAN_FALSE;
-	if (lazyInit == SL_BOOLEAN_FALSE )
-	{
-		lazyInit = SL_BOOLEAN_TRUE;
-
-		// PLAY!
-		__android_log_print(ANDROID_LOG_INFO, APP, "initial play");
-		result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &realtimeBuffer[0], BUFFER_SIZE);
-	}
 
 	// thread stuff...
 	while (1)
 	{
 	}
-	retun NULL;
+	return NULL ;
 }
 
 // create audio recorder
