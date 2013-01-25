@@ -9,15 +9,18 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.alex.andoird.ampsim.R;
+import com.alex.andoird.ampsim.jni.JNIWrapper;
 
 public class Main extends Activity {
 
 	static AssetManager assetManager;
 	private Context mcontext = this;
 	
-	static{
-		
+	// buttons
+	Button startButton, shutdownButton, runButton, reverbButton, quitButton;
+
+	static {
+
 		// load c code
 		System.loadLibrary("native");
 	}
@@ -27,84 +30,79 @@ public class Main extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		handleUI();
+		setupButtonHandler();
 	}
 
-	private void handleUI() {
-		// initialize button click handlers
-		((Button) findViewById(R.id.Start))
-				.setOnClickListener(new OnClickListener() {
-					public void onClick(View view) {
+	/**
+	 * gets references to buttons on view and implement onClick handler for them
+	 */
+	private void setupButtonHandler() {
+		
+		startButton = (Button) this.findViewById(R.id.Start);
+		shutdownButton = (Button) this.findViewById(R.id.Shutdown);
+		runButton = (Button) this.findViewById(R.id.Run);
+		reverbButton = (Button) this.findViewById(R.id.Reverb);
+		quitButton = (Button) this.findViewById(R.id.Quit);
+		
+		startButton.setOnClickListener(new OnClickListener() {
 
-						createEngine();
-						Toast.makeText(
-								mcontext,
-								"Latency: " + String.valueOf(getLatency())
-										+ "ms", Toast.LENGTH_SHORT).show();
-					}
-				});
+			public void onClick(View view) {
 
-		((Button) findViewById(R.id.Shutdown))
-				.setOnClickListener(new OnClickListener() {
-					public void onClick(View view) {
+				JNIWrapper.createEngine();
+				Toast.makeText(mcontext, "Latency: " + String.valueOf(JNIWrapper.getLatency()) + "ms", Toast.LENGTH_SHORT).show();
+			}
+		});
 
-						shutdown();
-						createEngine();
-					}
-				});
+		shutdownButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View view) {
 
-		((Button) findViewById(R.id.Run))
-				.setOnClickListener(new OnClickListener() {
-					public void onClick(View view) {
+				JNIWrapper.shutdown();
+				JNIWrapper.createEngine();
+			}
+		});
 
-						runEngine();
-					}
-				});
+		runButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View view) {
 
-		((Button) findViewById(R.id.Reverb))
-				.setOnClickListener(new OnClickListener() {
+				JNIWrapper.runEngine();
+			}
+		});
 
-					boolean enabled = false;
+		reverbButton.setOnClickListener(new OnClickListener() {
 
-					public void onClick(View view) {
-						enabled = !enabled;
-						if (!enableReverb(enabled)) {
-							enabled = !enabled;
-						}
+			boolean enabled = false;
 
-					}
-				});
+			public void onClick(View view) {
+				enabled = !enabled;
+				if (!JNIWrapper.enableReverb(enabled)) {
+					enabled = !enabled;
+				}
 
-		((Button) findViewById(R.id.Quit))
-				.setOnClickListener(new OnClickListener() {
-					public void onClick(View view) {
-						shutdown();
-						finish();
-					}
-				});
+			}
+		});
+		
+		quitButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View view) {
+				JNIWrapper.shutdown();
+				finish();
+			}
+		});
 	}
 
-	/** Called when the activity is about to be destroyed. */
+	/**
+	 * Called when the activity is about to be paused.
+	 */
 	@Override
 	protected void onPause() {
 		super.onPause();
 	}
 
-	/** Called when the activity is about to be destroyed. */
+	/**
+	 * Called when the activity is about to be destroyed.
+	 */
 	@Override
 	protected void onDestroy() {
-		shutdown();
+		JNIWrapper.shutdown();
 		super.onDestroy();
 	}
-
-	/** Native methods, implemented in jni folder */
-	public static native void createEngine();
-
-	public static native void runEngine();
-
-	public static native float getLatency();
-
-	public static native boolean enableReverb(boolean enabled);
-
-	public static native void shutdown();
 }

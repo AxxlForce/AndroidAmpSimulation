@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="cdt.managedbuild.config.gnu.so.release.1292406634">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.so.release.1292406634" moduleId="org.eclipse.cdt.core.settings" name="NativeCode">
@@ -9,7 +7,7 @@
 					<externalSetting>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/AndroidAmpSim"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/AndroidAmpSim/NativeCode"/>
-						<entry flags="RESOLVED" kind="libraryFile" name="AndroidAmpSim" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="RESOLVED" kind="libraryFile" name="AndroidAmpSim"/>
 					</externalSetting>
 				</externalSettings>
 				<extensions>
@@ -26,11 +24,11 @@
 					<folderInfo id="cdt.managedbuild.config.gnu.so.release.1292406634." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.768573564" name="Linux GCC" resourceTypeBasedDiscovery="false" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.1956931679" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder buildPath="${workspace_loc:/AndroidAmpSim/NativeCode}" command="/home/alex/android-ndk-r8b/ndk-build" enableCleanBuild="false" id="cdt.managedbuild.target.gnu.builder.base.439894754" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder buildPath="${workspace_loc:/AndroidAmpSim/NativeCode}" command="/home/alex/android-ndk-r8d/ndk-build" enableCleanBuild="false" id="cdt.managedbuild.target.gnu.builder.base.439894754" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1608509039" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1589645494" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.793113285" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/alex/android-ndk-r8b/platforms/android-14/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/alex/android-ndk-r8d/platforms/android-14/arch-arm/usr/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.740364418" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.163192712" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
@@ -38,7 +36,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.315367694" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.421553681" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/home/alex/android-ndk-r8b/platforms/android-14/arch-arm/usr/include"/>
+									<listOptionValue builtIn="false" value="/home/alex/android-ndk-r8d/platforms/android-14/arch-arm/usr/include"/>
 								</option>
 								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.383664393" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.680295307" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.none" valueType="enumerated"/>
@@ -68,13 +66,8 @@
 		<project id="NativeTesting.null.374605929" name="NativeTesting"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope" versionNumber="2">
-		<configuration configurationName="Default">
-			<resource resourceType="PROJECT" workspacePath="/NativeTesting"/>
-		</configuration>
-		<configuration configurationName="NativeCode">
-			<resource resourceType="PROJECT" workspacePath="/AndroidAmpSim"/>
-		</configuration>
+	<storageModule moduleId="refreshScope" versionNumber="1">
+		<resource resourceType="PROJECT" workspacePath="/AndroidAmpSim"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="scannerConfiguration">
@@ -91,10 +84,10 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.release.1292406634;cdt.managedbuild.config.gnu.so.release.1292406634.;cdt.managedbuild.tool.gnu.cpp.compiler.base.1589645494;cdt.managedbuild.tool.gnu.cpp.compiler.input.1320609119">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="0.339907216">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.release.1292406634;cdt.managedbuild.config.gnu.so.release.1292406634.;cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1455126964;cdt.managedbuild.tool.gnu.cpp.compiler.input.529166433">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.release.1292406634;cdt.managedbuild.config.gnu.so.release.1292406634.;cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1455126964;cdt.managedbuild.tool.gnu.cpp.compiler.input.529166433">
+		<scannerConfigBuildInfo instanceId="0.339907216">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
