@@ -81,26 +81,26 @@ void recordSingleBuffer(const void *pBuffer, SLuint32 size);
  *------------------------------------------------------------------------------------------------------------------------------------*/
 
 // create the engine and output mix objects
-void Java_com_alex_android_ampsim_Main_createEngine(JNIEnv* env, jclass clazz)
+void Java_com_alex_android_ampsim_jni_JNIWrapper_createEngine(JNIEnv* env, jclass clazz)
 {
 	createEngine();
 	createAudioRecorder();
 	createAudioPlayer();
 }
 
-void Java_com_alex_android_ampsim_Main_runEngine(JNIEnv* env, jclass clazz)
+void Java_com_alex_android_ampsim_jni_JNIWrapper_runEngine(JNIEnv* env, jclass clazz)
 {
 	// kickoff loopback!
 	recordSingleBuffer(&realtimeBuffer[0], BUFFER_SIZE);
 }
 
-jfloat Java_com_alex_android_ampsim_Main_getLatency(JNIEnv* env, jclass clazz)
+jfloat Java_com_alex_android_ampsim_jni_JNIWrapper_getLatency(JNIEnv* env, jclass clazz)
 {
 	return SAMPLES_PER_BUFFER / 4.41;
 }
 
 // enable reverb on the buffer queue player
-jboolean Java_com_alex_android_ampsim_Main_enableReverb(JNIEnv* env, jclass clazz, jboolean enabled)
+jboolean Java_com_alex_android_ampsim_jni_JNIWrapper_enableReverb(JNIEnv* env, jclass clazz, jboolean enabled)
 {
 	SLresult result;
 
@@ -122,7 +122,7 @@ jboolean Java_com_alex_android_ampsim_Main_enableReverb(JNIEnv* env, jclass claz
 }
 
 // shut down the native audio system
-void Java_com_alex_android_ampsim_Main_shutdown(JNIEnv* env, jclass clazz)
+void Java_com_alex_android_ampsim_jni_JNIWrapper_shutdown(JNIEnv* env, jclass clazz)
 {
 	// destroy buffer queue audio player object, and invalidate all associated interfaces
 	if (playerObject != NULL )
