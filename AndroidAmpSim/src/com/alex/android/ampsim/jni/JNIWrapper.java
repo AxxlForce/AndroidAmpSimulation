@@ -1,9 +1,9 @@
-package com.alex.andoird.ampsim.jni;
+package com.alex.android.ampsim.jni;
 
 public class JNIWrapper {
 	
 	/**
-	 * Native methods, implemented in jni folder
+	 * Native methods, implemented in jni/native.c
 	 */
 	public static native void createEngine();
 
@@ -14,5 +14,4 @@ public class JNIWrapper {
 	public static native boolean enableReverb(boolean enabled);
 
 	public static native void shutdown();
-
 }

@@ -9,7 +9,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.alex.andoird.ampsim.jni.JNIWrapper;
+import com.alex.android.ampsim.jni.JNIWrapper;
 
 public class Main extends Activity {
 
@@ -27,6 +27,7 @@ public class Main extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
@@ -83,6 +84,7 @@ public class Main extends Activity {
 		
 		quitButton.setOnClickListener(new OnClickListener() {
 			public void onClick(View view) {
+				
 				JNIWrapper.shutdown();
 				finish();
 			}
@@ -102,6 +104,7 @@ public class Main extends Activity {
 	 */
 	@Override
 	protected void onDestroy() {
+
 		JNIWrapper.shutdown();
 		super.onDestroy();
 	}
