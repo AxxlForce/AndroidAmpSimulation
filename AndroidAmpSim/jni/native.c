@@ -60,13 +60,15 @@ static SLObjectItf recorderObject = NULL;
 static SLRecordItf recorderRecord;
 static SLAndroidSimpleBufferQueueItf bqRecorderBufferQueue;
 
-// buffer
-#define SAMPLES_PER_BUFFER (150)
-#define NUMBER_OF_BUFFERS (5000)
 static SLDataFormat_PCM FORMAT_PCM = { SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
 
-#define BUFFER_SIZE (SAMPLES_PER_BUFFER * SL_PCMSAMPLEFORMAT_FIXED_16)
-static uint16_t realtimeBuffer[SAMPLES_PER_BUFFER * NUMBER_OF_BUFFERS];
+// buffer
+#define BUFFER_SIZE 512
+#define BUFFER_SIZE_IN_SAMPLES (BUFFER_SIZE / 2)
+
+static uint16_t inputBuffer[2][BUFFER_SIZE];
+static uint16_t outputBuffer[2][BUFFER_SIZE];
+
 static uint16_t recordingShift = 0;
 static uint16_t playingShift = 0;
 
