@@ -62,6 +62,16 @@ static SLAndroidSimpleBufferQueueItf bqRecorderBufferQueue;
 
 static SLDataFormat_PCM FORMAT_PCM = { SL_DATAFORMAT_PCM, 1, SL_SAMPLINGRATE_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_PCMSAMPLEFORMAT_FIXED_16, SL_SPEAKER_FRONT_CENTER, SL_BYTEORDER_LITTLEENDIAN };
 
+/*-----------------------|-----------------------|
+|                        |                       |
+|  Input Buffer A (0)    |   Input Buffer B (1)  |
+|                        |                       |
+|------------------------|-----------------------|
+|                        |                       |
+|  Output Buffer A (0)   |   Output Buffer B (1) |
+|                        |                       |
+|------------------------|----------------------*/
+
 // buffer
 #define BUFFER_SIZE 512
 #define BUFFER_SIZE_IN_SAMPLES (BUFFER_SIZE / 2)
